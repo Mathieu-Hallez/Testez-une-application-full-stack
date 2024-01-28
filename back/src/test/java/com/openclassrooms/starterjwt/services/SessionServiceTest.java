@@ -1,9 +1,11 @@
 package com.openclassrooms.starterjwt.services;
 
+import com.openclassrooms.starterjwt.exception.NotFoundException;
 import com.openclassrooms.starterjwt.models.Session;
 import com.openclassrooms.starterjwt.models.Teacher;
 import com.openclassrooms.starterjwt.models.User;
 import com.openclassrooms.starterjwt.repository.SessionRepository;
+import com.openclassrooms.starterjwt.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.Instant;
@@ -30,13 +33,15 @@ import static org.mockito.Mockito.*;
 public class SessionServiceTest {
 
     @Mock
-    private SessionRepository sessionRepository;
+    private static SessionRepository sessionRepository;
+    @Mock
+    private static UserRepository userRepository;
 
     @InjectMocks
-    private SessionService sessionService;
+    private static SessionService sessionService;
 
-    private Session session;
-    private User user;
+    private static Session session;
+    private static User user;
     private Teacher teacher;
 
     @BeforeEach
@@ -118,13 +123,43 @@ public class SessionServiceTest {
     // Update a session
     @Test
     public void givenSessionIdAndEditedSession_whenUpdateASession_thenReturnSessionUpdated() {
+        Session session1 = Session.builder()
+                .name("session1")
+                .build();
+
+        when(sessionRepository.save(any(Session.class))).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
+
+        Session sessionUpdated = sessionService.update(1L, session1);
+        assertThat(sessionUpdated.getId()).isEqualTo(1L);
+        assertThat(sessionUpdated.getName()).isEqualTo("session1");
+    }
+    // Participate to a session
+
+    // - session not found
+    @Test
+    public void givenSessionIdandUserId_whenParticipateToASession_thenThrowNotFoundExceptionForTheSession() {
+
+        when(sessionRepository.findById(anyLong())).thenAnswer(invocationOnMock -> {
+            Long sessionId = (Long) invocationOnMock.getArgument(0);
+            if (sessionId == 1L) {
+                return Optional.ofNullable(session);
+            }
+            return Optional.empty();
+        });
+
+        when(userRepository.findById(anyLong())).thenAnswer(invocationOnMock -> {
+            Long sessionId = (Long) invocationOnMock.getArgument(0);
+            if (sessionId == 1L) {
+                return Optional.ofNullable(user);
+            }
+            return Optional.empty();
+        });
+
+        assertThatExceptionOfType(NotFoundException.class).isThrownBy(
+                () -> sessionService.participate(2L, 1L)
+        );
     }
 
-    // Participate to a session
-    @ExtendWith(MockitoExtension.class)
-    @DisplayName("Test on subscribe and unsubscribe functionality for a session participation")
-    public class SessionServiceParticipate {
-        // - session not found
         // - user not found
         // - user already participate to the session
         // - successfully participate
@@ -133,5 +168,4 @@ public class SessionServiceTest {
         // - session not found
         // - user no already participate to the session
         // - successfully leave session
-    }
 }
