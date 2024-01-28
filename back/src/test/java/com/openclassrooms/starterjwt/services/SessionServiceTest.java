@@ -1,5 +1,6 @@
 package com.openclassrooms.starterjwt.services;
 
+import com.openclassrooms.starterjwt.exception.BadRequestException;
 import com.openclassrooms.starterjwt.exception.NotFoundException;
 import com.openclassrooms.starterjwt.models.Session;
 import com.openclassrooms.starterjwt.models.Teacher;
@@ -13,6 +14,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import javax.swing.text.html.Option;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -33,15 +36,15 @@ import static org.mockito.Mockito.*;
 public class SessionServiceTest {
 
     @Mock
-    private static SessionRepository sessionRepository;
+    private SessionRepository sessionRepository;
     @Mock
-    private static UserRepository userRepository;
+    private UserRepository userRepository;
 
     @InjectMocks
-    private static SessionService sessionService;
+    private SessionService sessionService;
 
-    private static Session session;
-    private static User user;
+    private Session session;
+    private User user;
     private Teacher teacher;
 
     @BeforeEach
@@ -115,7 +118,6 @@ public class SessionServiceTest {
     }
     @Test
     public void givenUnknownSessionId_whenGetSessionById_thenReturnNUll() {
-        when(sessionRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         assertThat(sessionService.getById(2L)).isNull();
     }
@@ -137,35 +139,61 @@ public class SessionServiceTest {
 
     // - session not found
     @Test
-    public void givenSessionIdandUserId_whenParticipateToASession_thenThrowNotFoundExceptionForTheSession() {
+    public void givenSessionIdAndUserId_whenParticipateToASession_thenThrowNotFoundExceptionForTheSession() {
 
-        when(sessionRepository.findById(anyLong())).thenAnswer(invocationOnMock -> {
-            Long sessionId = (Long) invocationOnMock.getArgument(0);
-            if (sessionId == 1L) {
-                return Optional.ofNullable(session);
-            }
-            return Optional.empty();
-        });
+        when(sessionRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        when(userRepository.findById(anyLong())).thenAnswer(invocationOnMock -> {
-            Long sessionId = (Long) invocationOnMock.getArgument(0);
-            if (sessionId == 1L) {
-                return Optional.ofNullable(user);
-            }
-            return Optional.empty();
-        });
+        when(userRepository.findById(anyLong())).thenReturn(Optional.ofNullable(user));
 
         assertThatExceptionOfType(NotFoundException.class).isThrownBy(
                 () -> sessionService.participate(2L, 1L)
         );
     }
 
-        // - user not found
-        // - user already participate to the session
-        // - successfully participate
+    // - user not found
+    @Test
+    public void givenSessionIdAndUserId_whenParticipateToASession_thenThrowNotFoundExceptionForTheUser() {
 
-        // No longer participate to a session
-        // - session not found
-        // - user no already participate to the session
-        // - successfully leave session
+        when(sessionRepository.findById(anyLong())).thenReturn(Optional.ofNullable(session));
+
+        when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThatExceptionOfType(NotFoundException.class).isThrownBy(
+                () -> sessionService.participate(1L, 2L)
+        );
+    }
+    // - user already participate in the session
+    @Test
+    public void givenSessionIdAndUserId_whenParticipateToASession_thenThrowBadRequestExceptionBecauseAlreadyParticipate() {
+        // Given
+        List<User> participants = new ArrayList<>();
+        participants.add(user);
+        session.setUsers(participants);
+
+        // When
+        when(sessionRepository.findById(anyLong())).thenReturn(Optional.ofNullable(session));
+
+        when(userRepository.findById(anyLong())).thenReturn(Optional.ofNullable(user));
+
+        assertThatExceptionOfType(BadRequestException.class).isThrownBy(
+                () -> sessionService.participate(1L, 1L)
+        );
+    }
+    // - successfully participate
+    @Test
+    public void givenSessionIdAndUserId_whenParticipateToASession_thenSuccessfullyAddUserAndSaveIt() {
+        // When
+        when(sessionRepository.findById(anyLong())).thenReturn(Optional.ofNullable(session));
+        when(userRepository.findById(anyLong())).thenReturn(Optional.ofNullable(user));
+        sessionService.participate(1L,1L);
+
+        // Then
+        verify(sessionRepository, times(1)).save(any(Session.class));
+        assertThat(session.getUsers()).contains(user);
+    }
+
+    // No longer participate to a session
+    // - session not found
+    // - user no already participate to the session
+    // - successfully leave session
 }
