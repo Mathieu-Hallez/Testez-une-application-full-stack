@@ -194,6 +194,36 @@ public class SessionServiceTest {
 
     // No longer participate to a session
     // - session not found
+    @Test
+    public void givenSessionIdAndUserId_whenNoLongerParticipateToASession_thenThrowNotFoundExceptionForTheSession() {
+        // When
+        when(sessionRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        // Then
+        assertThatExceptionOfType(NotFoundException.class).isThrownBy(() -> sessionService.noLongerParticipate(1L, 1L));
+    }
     // - user no already participate to the session
+    @Test
+    @DisplayName("Unsubscribe a user of a session but the user not already participate to the session.")
+    public void givenSessionIdAndUserId_whenNoLongerParticipateToASession_thenThrowBadRequestException() {
+
+        when(sessionRepository.findById(anyLong())).thenReturn(Optional.ofNullable(session));
+
+        assertThatExceptionOfType(BadRequestException.class).isThrownBy(() -> sessionService.noLongerParticipate(1L, 1L));
+    }
     // - successfully leave session
+    @Test
+    public void givenSessionIdAndUserId_whenNoLongerParticipateToASession_thenSuccessfullyNoLongerParticipate() {
+
+        // Given
+        session.getUsers().add(user);
+
+        // When
+        when(sessionRepository.findById(anyLong())).thenReturn(Optional.ofNullable(session));
+        sessionService.noLongerParticipate(1L,1L);
+
+        // Then
+        verify(sessionRepository, times(1)).save(any(Session.class));
+        assertThat(session.getUsers()).doesNotContain(user);
+    }
 }
