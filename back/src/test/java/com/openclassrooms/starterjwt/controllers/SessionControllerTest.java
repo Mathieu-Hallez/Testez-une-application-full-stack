@@ -2,11 +2,13 @@ package com.openclassrooms.starterjwt.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openclassrooms.starterjwt.dto.SessionDto;
+import com.openclassrooms.starterjwt.exception.BadRequestException;
 import com.openclassrooms.starterjwt.mapper.SessionMapper;
 import com.openclassrooms.starterjwt.models.Session;
 import com.openclassrooms.starterjwt.models.Teacher;
 import com.openclassrooms.starterjwt.models.User;
 import com.openclassrooms.starterjwt.services.SessionService;
+import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -29,9 +31,8 @@ import java.util.Date;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.assertj.core.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 
 @SpringBootTest
@@ -53,6 +54,7 @@ public class SessionControllerTest {
     private SessionService sessionService;
 
     private Session session;
+    private SessionDto sessionDto;
     private User user;
     private Teacher teacher;
 
@@ -85,12 +87,14 @@ public class SessionControllerTest {
                 .createdAt(LocalDateTime.now())
                 .updatedAt(null)
                 .build();
+        sessionDto = sessionMapper.toDto(session);
+
+        when(sessionService.getById(1L)).thenReturn(session);
+        when(sessionService.getById(2L)).thenReturn(null);
     }
 
     @Test
     public void givenAnExistIdSession_whenCallFindById_thenResponseOKStatusWithSessionDto() throws Exception {
-        when(sessionService.getById(any(Long.class))).thenReturn(session);
-
         mockMvc.perform(get(SessionControllerTest.SESSION_PATH + "/{id}", "1"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(sessionMapper.toDto(session))));
@@ -100,16 +104,18 @@ public class SessionControllerTest {
 
     @Test
     public void givenAnIdSession_whenCallFindById_thenResponseNotFound() throws Exception {
-        when(sessionService.getById(any(Long.class))).thenReturn(null);
-
-        mockMvc.perform(get(SessionControllerTest.SESSION_PATH + "/{id}", "1"))
+        mockMvc.perform(get(SessionControllerTest.SESSION_PATH + "/{id}", "2"))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
     @Test
     public void givenAString_whenCallFindById_thenResponseBadRequest() throws Exception {
-        mockMvc.perform(get(SessionControllerTest.SESSION_PATH + "/{id}", "test"))
+        String id = "test";
+
+        mockMvc.perform(get(SessionControllerTest.SESSION_PATH + "/{id}", id))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+        assertThatExceptionOfType(NumberFormatException.class).isThrownBy(() -> Long.parseLong(id));
     }
 
     @Test
@@ -131,36 +137,147 @@ public class SessionControllerTest {
     }
 
     @Test
-    @Disabled
     public void givenValidSessionDto_whenCallCreate_thenResponseOkStatusWithTheNewSessionDtoCreated() throws Exception {
 
+        when(sessionService.create(any(Session.class))).thenReturn(session);
 
-//        MvcResult result = mockMvc.perform(post(SessionControllerTest.SESSION_PATH).contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString()))
-//                .andExpect(MockMvcResultMatchers.status().isOk())
-//                .andReturn();
+        MvcResult result = mockMvc.perform(
+                    post(SessionControllerTest.SESSION_PATH)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(sessionDto))
+                ).andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
 
-
+        assertThat(objectMapper.readValue(result.getResponse().getContentAsString(),SessionDto.class).getName()).isEqualTo(sessionDto.getName());
     }
 
-    // Create
-    // - Ok
-    // - Session Dto
-    // - Bad Request (Unvalid SessionDto)
+    @Test
+    public void givenInvalidSessionDto_whenCallCreate_thenResponseBadRequest() throws Exception {
 
-    // Update
-    // - OK
-    // - BadRequest NumberFormatException
-    // - Bad Request (Unvalid SessionDto)
+        String incorrectSessionDtoJsonString = objectMapper.writeValueAsString(sessionDto).replaceAll("\"name\":\"session1\"", "");
 
-    // Delete
-    // - OK
-    // - BadRequest NumberFormatException
-    // - Bad Request (Unvalid SessionDto)
+        mockMvc.perform(
+                post(SessionControllerTest.SESSION_PATH)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(incorrectSessionDtoJsonString)
+            ).andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
 
-    // Participate
-    // - OK
-    // - BadRequest NumberFormatException
+    @Test
+    public void givenSessionIdToUpdateAndSessionDtoForUpdate_whenCallUpdate_thenReturnResponseStatusOkWithSessionDtoUpdated() throws Exception {
+        when(sessionService.update(anyLong(), any(Session.class))).thenReturn(session);
 
+        MvcResult result = mockMvc.perform(
+                put(SessionControllerTest.SESSION_PATH + "/{id}", "1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(sessionDto))
+                ).andExpect(MockMvcResultMatchers.status().isOk()).andReturn();
+
+        assertThat(result.getResponse().getContentAsString()).contains(session.getName());
+    }
+
+    @Test
+    public void givenInvalidSessionIdAndSessionDtoForUpdate_whenCallUpdate_thenReturnResponseStatusBadRequest() throws Exception {
+        String id = "test";
+
+        mockMvc.perform(
+                put(SessionControllerTest.SESSION_PATH + "/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(sessionDto))
+        ).andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+        assertThatExceptionOfType(NumberFormatException.class).isThrownBy(() -> Long.parseLong(id));
+    }
+
+    @Test
+    public void givenSessionIdAndInvalidSessionDtoForUpdate_whenCallUpdate_thenReturnResponseStatusBadRequest() throws Exception {
+        String incorrectSessionDtoJsonString = objectMapper.writeValueAsString(sessionDto).replaceAll("\"name\":\"session1\"", "");
+
+        mockMvc.perform(
+                put(SessionControllerTest.SESSION_PATH + "/{id}", "1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(incorrectSessionDtoJsonString)
+        ).andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    public void givenSessionId_whenDeleteASession_thenReturnResponseStatusOK() throws Exception {
+        mockMvc.perform(delete(SessionControllerTest.SESSION_PATH + "/{id}", "1"))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+        verify(sessionService,times(1)).delete(1L);
+    }
+
+    @Test
+    public void givenSessionId_whenDeleteASession_thenReturnResponseStatusNotFound() throws Exception {
+        mockMvc.perform(delete(SessionControllerTest.SESSION_PATH + "/{id}", "2"))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @Test
+    public void givenInvalidSessionId_whenDeleteASession_thenReturnResponseStatusBadRequest() throws Exception {
+        String id = "test";
+
+        mockMvc.perform(delete(SessionControllerTest.SESSION_PATH + "/{id}", id))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+        assertThatExceptionOfType(NumberFormatException.class).isThrownBy(() -> Long.parseLong(id));
+    }
+
+    @Test
+    public void givenSessionIdAndUserId_whenParticipate_thenReturnResponseStatusOk() throws Exception {
+        mockMvc.perform(post(SessionControllerTest.SESSION_PATH + "/{id}/participate/{userId}", "1", "1"))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+
+        verify(sessionService, times(1)).participate(1L,1L);
+    }
+
+    @Test
+    public void givenInvalidSessionIdAndUserId_whenParticipate_thenReturnResponseStatusBadRequest() throws Exception {
+        String id = "test";
+
+        mockMvc.perform(post(SessionControllerTest.SESSION_PATH + "/{id}/participate/{userId}", id, "1"))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+        assertThatExceptionOfType(NumberFormatException.class).isThrownBy(() -> Long.parseLong(id));
+    }
+
+    @Test
+    public void givenSessionIdAndInvalidUserId_whenParticipate_thenReturnResponseStatusBadRequest() throws Exception {
+        String id = "test";
+
+        mockMvc.perform(post(SessionControllerTest.SESSION_PATH + "/{id}/participate/{userId}", "1", id))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+        assertThatExceptionOfType(NumberFormatException.class).isThrownBy(() -> Long.parseLong(id));
+    }
+
+    @Test
+    public void givenSessionIdAndUserId_whenNoLongerParticipate_thenReturnResponseStatusOk() throws Exception {
+        mockMvc.perform(delete(SessionControllerTest.SESSION_PATH + "/{id}/participate/{userId}", "1", "1"))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+
+        verify(sessionService, times(1)).noLongerParticipate(1L,1L);
+    }
+
+    @Test
+    public void givenInvalidSessionIdAndUserId_whenNoLongerParticipate_thenReturnResponseStatusBadRequest() throws Exception {
+        String id = "test";
+
+        mockMvc.perform(delete(SessionControllerTest.SESSION_PATH + "/{id}/participate/{userId}", id, "1"))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+        assertThatExceptionOfType(NumberFormatException.class).isThrownBy(() -> Long.parseLong(id));
+    }
+
+    @Test
+    public void givenSessionIdAndInvalidUserId_whenNoLongerParticipate_thenReturnResponseStatusBadRequest() throws Exception {
+        String id = "test";
+
+        mockMvc.perform(delete(SessionControllerTest.SESSION_PATH + "/{id}/participate/{userId}", "1", id))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+        assertThatExceptionOfType(NumberFormatException.class).isThrownBy(() -> Long.parseLong(id));
+    }
     // NoLongerPartcipate
     // - OK
     // - BadRequest NumberFormatException
