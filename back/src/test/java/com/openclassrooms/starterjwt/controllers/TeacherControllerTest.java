@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@DisplayName("Unit Test for Teacher Service")
+@DisplayName("Unit Test for Teacher Controller")
 @WithMockUser
 public class TeacherControllerTest {
 
@@ -88,7 +88,7 @@ public class TeacherControllerTest {
     }
 
     @Test
-    public void whenCallFindAll_thenResponseOkStatusWithAListOfSessions() throws Exception {
+    public void whenCallFindAll_thenResponseOkStatusWithAListOfTeachers() throws Exception {
         List<Teacher> teachers = new ArrayList<>();
         teachers.add(teacher);
         List<TeacherDto> dtoTeachers = this.teacherMapper.toDto(teachers);
