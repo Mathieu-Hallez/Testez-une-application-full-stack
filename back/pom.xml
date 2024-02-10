@@ -133,7 +133,7 @@
 						<configuration>
 							<rules>
 								<rule>
-									<element>CLASS</element>
+									<element>BUNDLE</element>
 									<excludes>
 										<exclude>*Test</exclude>
 										<exclude>*Request</exclude>
