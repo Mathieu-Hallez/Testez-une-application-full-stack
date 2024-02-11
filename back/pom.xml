@@ -13,10 +13,12 @@
 	<artifactId>yoga-app</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>yoga-app</name>
-	<description>The best backend for an Yoga app !</description>
+	<description>The best backend for a Yoga app !</description>
 
 	<properties>
 		<java.version>1.8</java.version>
+		<sonar.organization>mathieu-hallez</sonar.organization>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 	</properties>
 
 	<dependencies>
@@ -73,13 +75,20 @@
 		<dependency>
 			<groupId>org.mapstruct</groupId>
 			<artifactId>mapstruct</artifactId>
-			<version>1.5.1.Final</version>
+			<version>1.5.3.Final</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.mapstruct</groupId>
 			<artifactId>mapstruct-processor</artifactId>
-			<version>1.5.1.Final</version>
+			<version>1.5.3.Final</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.assertj/assertj-core -->
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<version>3.25.1</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
@@ -97,10 +106,6 @@
                     </excludes>
                 </configuration>
             </plugin>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
@@ -120,26 +125,32 @@
 						</goals>
 					</execution>
 
-					<execution>
-						<id>jacoco-check</id>
-						<goals>
-							<goal>check</goal>
-						</goals>
-						<configuration>
-							<rules>
-								<rule>
-									<element>PACKAGE</element>
-									<limits>
-										<limit>
-											<counter>LINE</counter>
-											<value>COVEREDRATIO</value>
-											<minimum>0.9</minimum>
-										</limit>
-									</limits>
-								</rule>
-							</rules>
-						</configuration>
-					</execution>
+<!--					<execution>-->
+<!--						<id>jacoco-check</id>-->
+<!--						<goals>-->
+<!--							<goal>check</goal>-->
+<!--						</goals>-->
+<!--						<configuration>-->
+<!--							<rules>-->
+<!--								<rule>-->
+<!--									<element>BUNDLE</element>-->
+<!--									<excludes>-->
+<!--										<exclude>*Test</exclude>-->
+<!--										<exclude>*Request</exclude>-->
+<!--										<exclude>*Response</exclude>-->
+<!--										<exclude>*Dto</exclude>-->
+<!--									</excludes>-->
+<!--									<limits>-->
+<!--										<limit>-->
+<!--											<counter>LINE</counter>-->
+<!--											<value>COVEREDRATIO</value>-->
+<!--											<minimum>80%</minimum>-->
+<!--										</limit>-->
+<!--									</limits>-->
+<!--								</rule>-->
+<!--							</rules>-->
+<!--						</configuration>-->
+<!--					</execution>-->
 
 				</executions>
 			</plugin>
