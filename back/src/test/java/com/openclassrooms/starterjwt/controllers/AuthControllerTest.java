@@ -38,155 +38,151 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @SpringBootTest
+@AutoConfigureMockMvc
 public class AuthControllerTest {
 
-    @SpringBootTest
-    @AutoConfigureMockMvc
-    static public class AuthControllerUnitTest {
+    private static final String AUTHENTIFICATION_PATH = "/api/auth";
 
-        private static final String AUTHENTIFICATION_PATH = "/api/auth";
+    @Autowired
+    private ObjectMapper objectMapper;
 
-        @Autowired
-        private ObjectMapper objectMapper;
+    @Autowired
+    private MockMvc mockMvc;
 
-        @Autowired
-        private MockMvc mockMvc;
-
-        @MockBean
-        private UserService userService;
-        @MockBean
-        private UserRepository userRepository;
-        @MockBean
-        private AuthenticationManager authenticationManager;
-        @MockBean
-        private JwtUtils jwtUtils;
+    @MockBean
+    private UserService userService;
+    @MockBean
+    private UserRepository userRepository;
+    @MockBean
+    private AuthenticationManager authenticationManager;
+    @MockBean
+    private JwtUtils jwtUtils;
 
 //        @Test
 //        public void shouldNotAllowAccessToUnauthenticatedUsers() throws Exception {
 //            mockMvc.perform(MockMvcRequestBuilders.get("/test")).andExpect(status().isForbidden());
 //        }
 
-        private static User user;
-        private static User adminUser;
+    private static User user;
+    private static User adminUser;
 
-        @BeforeAll
-        public static void setUp() {
-            user = new User(1L, "test@test.com", "user-lastname", "user-firstname",
-                    "123456", false, LocalDateTime.now(), null);
-            adminUser = new User(1L, "test@test.com", "user-lastname", "user-firstname",
-                    "123456", true, LocalDateTime.now(), null);
-        }
+    @BeforeAll
+    public static void setUp() {
+        user = new User(1L, "test@test.com", "user-lastname", "user-firstname",
+                "123456", false, LocalDateTime.now(), null);
+        adminUser = new User(1L, "test@test.com", "user-lastname", "user-firstname",
+                "123456", true, LocalDateTime.now(), null);
+    }
 
-        @Test
-        public void givenEmailAndPassword_whenLoginUser_thenResponseJwtResponseObjectWithStatusOk() throws Exception {
+    @Test
+    public void givenEmailAndPassword_whenLoginUser_thenResponseJwtResponseObjectWithStatusOk() throws Exception {
 
-            //Given
-            LoginRequest loginRequest = new LoginRequest();
-            loginRequest.setEmail("test@test.com");
-            loginRequest.setPassword("123456");
-            Authentication authentication = new Authentication() {
-                @Override
-                public Collection<? extends GrantedAuthority> getAuthorities() {
-                    return null;
-                }            @Override
-                public Object getCredentials() {
-                    return null;
-                }            @Override
-                public Object getDetails() {
-                    return null;
-                }            @Override
-                public Object getPrincipal() {
-                    return new UserDetailsImpl(user.getId(), user.getEmail(), user.getFirstName(), user.getLastName(), user.isAdmin(), user.getPassword());
-                }            @Override
-                public boolean isAuthenticated() {
-                    return false;
-                }            @Override
-                public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {            }            @Override
-                public String getName() {
-                    return null;
-                }
-            };
+        //Given
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail("test@test.com");
+        loginRequest.setPassword("123456");
+        Authentication authentication = new Authentication() {
+            @Override
+            public Collection<? extends GrantedAuthority> getAuthorities() {
+                return null;
+            }            @Override
+            public Object getCredentials() {
+                return null;
+            }            @Override
+            public Object getDetails() {
+                return null;
+            }            @Override
+            public Object getPrincipal() {
+                return new UserDetailsImpl(user.getId(), user.getEmail(), user.getFirstName(), user.getLastName(), user.isAdmin(), user.getPassword());
+            }            @Override
+            public boolean isAuthenticated() {
+                return false;
+            }            @Override
+            public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {            }            @Override
+            public String getName() {
+                return null;
+            }
+        };
 
-            when(authenticationManager.authenticate(any())).thenReturn(authentication);
-            when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
-            when(jwtUtils.generateJwtToken(any(Authentication.class))).thenReturn("jwt");
+        when(authenticationManager.authenticate(any())).thenReturn(authentication);
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
+        when(jwtUtils.generateJwtToken(any(Authentication.class))).thenReturn("jwt");
 
-            //When
-            MvcResult result = mockMvc.perform(
-                    post(AUTHENTIFICATION_PATH + "/login")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(loginRequest))
-            // Then
-            ).andExpect(MockMvcResultMatchers.status().isOk()).andReturn();
+        //When
+        MvcResult result = mockMvc.perform(
+                post(AUTHENTIFICATION_PATH + "/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest))
+        // Then
+        ).andExpect(MockMvcResultMatchers.status().isOk()).andReturn();
 
-            JwtResponse jwtResponseReceived = objectMapper.readValue(result.getResponse().getContentAsString(), JwtResponse.class);
-            assertEquals(loginRequest.getEmail(), jwtResponseReceived.getUsername());
-            assertFalse(jwtResponseReceived.getAdmin());
+        JwtResponse jwtResponseReceived = objectMapper.readValue(result.getResponse().getContentAsString(), JwtResponse.class);
+        assertEquals(loginRequest.getEmail(), jwtResponseReceived.getUsername());
+        assertFalse(jwtResponseReceived.getAdmin());
 
-        }
+    }
 
-        @Test
-        public void givenEmailAndPassword_whenLoginUser_thenResponseJwtResponseObjectAdminWithStatusOk() throws Exception {
+    @Test
+    public void givenEmailAndPassword_whenLoginUser_thenResponseJwtResponseObjectAdminWithStatusOk() throws Exception {
 
-            //Given
-            LoginRequest loginRequest = new LoginRequest();
-            loginRequest.setEmail("test@test.com");
-            loginRequest.setPassword("123456");
-            Authentication authentication = new Authentication() {
-                @Override
-                public Collection<? extends GrantedAuthority> getAuthorities() {
-                    return null;
-                }            @Override
-                public Object getCredentials() {
-                    return null;
-                }            @Override
-                public Object getDetails() {
-                    return null;
-                }            @Override
-                public Object getPrincipal() {
-                    return new UserDetailsImpl(adminUser.getId(), adminUser.getEmail(), adminUser.getFirstName(), adminUser.getLastName(), true, adminUser.getPassword());
-                }            @Override
-                public boolean isAuthenticated() {
-                    return false;
-                }            @Override
-                public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {            }            @Override
-                public String getName() {
-                    return null;
-                }
-            };
+        //Given
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setEmail("test@test.com");
+        loginRequest.setPassword("123456");
+        Authentication authentication = new Authentication() {
+            @Override
+            public Collection<? extends GrantedAuthority> getAuthorities() {
+                return null;
+            }            @Override
+            public Object getCredentials() {
+                return null;
+            }            @Override
+            public Object getDetails() {
+                return null;
+            }            @Override
+            public Object getPrincipal() {
+                return new UserDetailsImpl(adminUser.getId(), adminUser.getEmail(), adminUser.getFirstName(), adminUser.getLastName(), true, adminUser.getPassword());
+            }            @Override
+            public boolean isAuthenticated() {
+                return false;
+            }            @Override
+            public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {            }            @Override
+            public String getName() {
+                return null;
+            }
+        };
 
-            when(authenticationManager.authenticate(any())).thenReturn(authentication);
-            when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(adminUser));
-            when(jwtUtils.generateJwtToken(any(Authentication.class))).thenReturn("jwt");
+        when(authenticationManager.authenticate(any())).thenReturn(authentication);
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(adminUser));
+        when(jwtUtils.generateJwtToken(any(Authentication.class))).thenReturn("jwt");
 
-            //When
-            MvcResult result = mockMvc.perform(
-                    post(AUTHENTIFICATION_PATH + "/login")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(loginRequest))
-                    // Then
-            ).andExpect(MockMvcResultMatchers.status().isOk()).andReturn();
+        //When
+        MvcResult result = mockMvc.perform(
+                post(AUTHENTIFICATION_PATH + "/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest))
+                // Then
+        ).andExpect(MockMvcResultMatchers.status().isOk()).andReturn();
 
-            JwtResponse jwtResponseReceived = objectMapper.readValue(result.getResponse().getContentAsString(), JwtResponse.class);
-            assertEquals(loginRequest.getEmail(), jwtResponseReceived.getUsername());
-            assertTrue(jwtResponseReceived.getAdmin());
-        }
+        JwtResponse jwtResponseReceived = objectMapper.readValue(result.getResponse().getContentAsString(), JwtResponse.class);
+        assertEquals(loginRequest.getEmail(), jwtResponseReceived.getUsername());
+        assertTrue(jwtResponseReceived.getAdmin());
+    }
 
-        @Test
-        public void givenSignUpRequest_whenRegisterUser_thenReturnResponseStatusOkWithMessageResponse() throws Exception {
-            SignupRequest signUpRequest = new SignupRequest();
-            signUpRequest.setEmail("test@test.com");
-            signUpRequest.setPassword("123456");
-            signUpRequest.setFirstName("firstname");
-            signUpRequest.setLastName("lastname");
+    @Test
+    public void givenSignUpRequest_whenRegisterUser_thenReturnResponseStatusOkWithMessageResponse() throws Exception {
+        SignupRequest signUpRequest = new SignupRequest();
+        signUpRequest.setEmail("test@test.com");
+        signUpRequest.setPassword("123456");
+        signUpRequest.setFirstName("firstname");
+        signUpRequest.setLastName("lastname");
 
-            //when existsByEmail
-            when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        //when existsByEmail
+        when(userRepository.existsByEmail(anyString())).thenReturn(false);
 
-            MvcResult result = mockMvc.perform(post(AUTHENTIFICATION_PATH + "/register")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(signUpRequest))
-            ).andExpect(MockMvcResultMatchers.status().isOk()).andReturn();
-        }
+        MvcResult result = mockMvc.perform(post(AUTHENTIFICATION_PATH + "/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signUpRequest))
+        ).andExpect(MockMvcResultMatchers.status().isOk()).andReturn();
     }
 }
