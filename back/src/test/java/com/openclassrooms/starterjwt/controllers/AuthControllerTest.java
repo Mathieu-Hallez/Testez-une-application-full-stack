@@ -54,11 +54,6 @@ public class AuthControllerTest {
     @MockBean
     private JwtUtils jwtUtils;
 
-//        @Test
-//        public void shouldNotAllowAccessToUnauthenticatedUsers() throws Exception {
-//            mockMvc.perform(MockMvcRequestBuilders.get("/test")).andExpect(status().isForbidden());
-//        }
-
     private static User user;
     private static User adminUser;
 
