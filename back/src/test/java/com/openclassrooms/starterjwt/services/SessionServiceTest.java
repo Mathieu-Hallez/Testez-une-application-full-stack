@@ -14,9 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.swing.text.html.Option;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -41,12 +38,11 @@ public class SessionServiceTest {
     @Mock
     private UserRepository userRepository;
 
-    @Autowired
+    @InjectMocks
     private SessionService sessionService;
 
     private Session session;
     private User user;
-    private Teacher teacher;
 
     @BeforeEach
     public void setup() {
@@ -60,7 +56,7 @@ public class SessionServiceTest {
                 .createdAt(LocalDateTime.now())
                 .updatedAt(null)
                 .build();
-        teacher = Teacher.builder()
+        Teacher teacher = Teacher.builder()
                 .id(1L)
                 .lastName("lastname")
                 .firstName("firstname")
@@ -73,7 +69,7 @@ public class SessionServiceTest {
                 .date(Date.from(Instant.now()))
                 .description("description")
                 .teacher(teacher)
-                .users(new ArrayList<User>())
+                .users(new ArrayList<>())
                 .createdAt(LocalDateTime.now())
                 .updatedAt(null)
                 .build();
@@ -97,7 +93,7 @@ public class SessionServiceTest {
     // findAll sessions
     @Test
     public void shouldGetAListOfAllSessionAvailable() {
-        List<Session> sessions = new ArrayList<Session>();
+        List<Session> sessions = new ArrayList<>();
         sessions.add(session);
 
         when(sessionRepository.findAll()).thenReturn(sessions);
@@ -193,7 +189,7 @@ public class SessionServiceTest {
         assertThat(session.getUsers()).contains(user);
     }
 
-    // No longer participate to a session
+    // No longer participate in a session
     // - session not found
     @Test
     public void givenSessionIdAndUserId_whenNoLongerParticipateToASession_thenThrowNotFoundExceptionForTheSession() {
@@ -203,7 +199,7 @@ public class SessionServiceTest {
         // Then
         assertThatExceptionOfType(NotFoundException.class).isThrownBy(() -> sessionService.noLongerParticipate(1L, 1L));
     }
-    // - user no already participate to the session
+    // - user no already participate in the session
     @Test
     @DisplayName("Unsubscribe a user of a session but the user not already participate to the session.")
     public void givenSessionIdAndUserId_whenNoLongerParticipateToASession_thenThrowBadRequestException() {

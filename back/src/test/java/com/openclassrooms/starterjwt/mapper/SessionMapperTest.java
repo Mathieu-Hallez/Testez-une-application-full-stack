@@ -23,10 +23,12 @@ import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.temporal.TemporalAccessor;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -81,6 +83,10 @@ public class SessionMapperTest {
                 .users(List.of(user))
                 .description("description")
                 .build();
+
+
+        when(teacherService.findById(1L)).thenReturn(teacher);
+        when(userService.findById(1L)).thenReturn(user);
     }
 
     @Test
@@ -88,12 +94,41 @@ public class SessionMapperTest {
         // Mocks
         // teacher.findById
         // user.findById
-        when(teacherService.findById(1L)).thenReturn(teacher);
-        when(userService.findById(1L)).thenReturn(user);
 
         Session sessionMapped = sessionMapper.toEntity(sessionDto);
 
         assertEquals(session.getId(), sessionMapped.getId());
         assertThat(session.getUsers().get(0).getEmail()).isEqualTo(user.getEmail());
+    }
+
+    @Test
+    public void givenSessiontDtoWithUnknownUsers_whenMapToEntity_thenReturnSessionWithNoUsers() {
+        session.setUsers(List.of());
+
+        Session sessionMapped = sessionMapper.toEntity(sessionDto);
+
+        assertEquals(session.getId(), sessionMapped.getId());
+        assertThat(session.getUsers()).isEmpty();
+    }
+
+    @Test
+    public void givenSessiontDtoWithNoTeacher_whenMapToEntity_thenReturnSessionWithNoTeacher() {
+        session.setTeacher(null);
+
+        Session sessionMapped = sessionMapper.toEntity(sessionDto);
+
+        assertEquals(session.getId(), sessionMapped.getId());
+        assertThat(session.getTeacher()).isNull();
+    }
+
+    @Test
+    public void givenSessionDtoList_whenMapToEntities_thenReturnSessionEntityList() {
+        List<SessionDto> sessionDtos = new ArrayList<>();
+        sessionDtos.add(sessionDto);
+
+        List<Session> sessionListMapped = sessionMapper.toEntity(sessionDtos);
+
+        assertThat(sessionListMapped).hasSize(1);
+        assertEquals(sessionDto.getName(),sessionListMapped.get(0).getName());
     }
 }
