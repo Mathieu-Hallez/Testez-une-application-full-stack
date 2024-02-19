@@ -275,8 +275,5 @@ public class SessionControllerTest {
 
         assertThatExceptionOfType(NumberFormatException.class).isThrownBy(() -> Long.parseLong(id));
     }
-    // NoLongerPartcipate
-    // - OK
-    // - BadRequest NumberFormatException
 
 }

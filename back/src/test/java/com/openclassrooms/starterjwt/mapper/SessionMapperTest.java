@@ -80,8 +80,6 @@ public class SessionMapperTest {
     @Test
     public void givenSessionDto_whenMapToEntity_thenReturnSession() {
         // Mocks
-        // teacher.findById
-        // user.findById
 
         Session sessionMapped = sessionMapper.toEntity(sessionDto);
 

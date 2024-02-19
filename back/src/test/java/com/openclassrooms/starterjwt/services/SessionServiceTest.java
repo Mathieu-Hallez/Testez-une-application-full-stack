@@ -75,7 +75,6 @@ public class SessionServiceTest {
                 .build();
     }
 
-    // Create a session
     @Test
     public void givenASessionObject_whenCreateSession_thenReturnTheSessionCreate() {
         when(sessionRepository.save(any(Session.class))).thenReturn(session);
@@ -83,14 +82,12 @@ public class SessionServiceTest {
         assertEquals(session.getName(), sessionService.create(session).getName());
     }
 
-    // Delete a session
     @Test
     public void givenASessionId_whenDeleteASession_thenCallDeleteByIdMethodOfSessionRepository() {
         sessionService.delete(1L);
         verify(sessionRepository, times(1)).deleteById(1L);
     }
 
-    // findAll sessions
     @Test
     public void shouldGetAListOfAllSessionAvailable() {
         List<Session> sessions = new ArrayList<>();
@@ -104,7 +101,6 @@ public class SessionServiceTest {
         assertThat(sessionsTested.get(0)).isInstanceOf(Session.class);
     }
 
-    // getBytId a session
     @Test
     public void givenSessionId_whenGetSessionById_thenReturnSessionWithSameId() {
 
@@ -132,9 +128,7 @@ public class SessionServiceTest {
         assertThat(sessionUpdated.getId()).isEqualTo(1L);
         assertThat(sessionUpdated.getName()).isEqualTo("session1");
     }
-    // Participate to a session
 
-    // - session not found
     @Test
     public void givenSessionIdAndUserId_whenParticipateToASession_thenThrowNotFoundExceptionForTheSession() {
 
@@ -147,7 +141,6 @@ public class SessionServiceTest {
         );
     }
 
-    // - user not found
     @Test
     public void givenSessionIdAndUserId_whenParticipateToASession_thenThrowNotFoundExceptionForTheUser() {
 
@@ -159,7 +152,7 @@ public class SessionServiceTest {
                 () -> sessionService.participate(1L, 2L)
         );
     }
-    // - user already participate in the session
+
     @Test
     public void givenSessionIdAndUserId_whenParticipateToASession_thenThrowBadRequestExceptionBecauseAlreadyParticipate() {
         // Given
@@ -176,7 +169,7 @@ public class SessionServiceTest {
                 () -> sessionService.participate(1L, 1L)
         );
     }
-    // - successfully participate
+
     @Test
     public void givenSessionIdAndUserId_whenParticipateToASession_thenSuccessfullyAddUserAndSaveIt() {
         // When
@@ -189,8 +182,6 @@ public class SessionServiceTest {
         assertThat(session.getUsers()).contains(user);
     }
 
-    // No longer participate in a session
-    // - session not found
     @Test
     public void givenSessionIdAndUserId_whenNoLongerParticipateToASession_thenThrowNotFoundExceptionForTheSession() {
         // When
@@ -199,7 +190,7 @@ public class SessionServiceTest {
         // Then
         assertThatExceptionOfType(NotFoundException.class).isThrownBy(() -> sessionService.noLongerParticipate(1L, 1L));
     }
-    // - user no already participate in the session
+
     @Test
     @DisplayName("Unsubscribe a user of a session but the user not already participate to the session.")
     public void givenSessionIdAndUserId_whenNoLongerParticipateToASession_thenThrowBadRequestException() {
@@ -208,7 +199,7 @@ public class SessionServiceTest {
 
         assertThatExceptionOfType(BadRequestException.class).isThrownBy(() -> sessionService.noLongerParticipate(1L, 1L));
     }
-    // - successfully leave session
+
     @Test
     public void givenSessionIdAndUserId_whenNoLongerParticipateToASession_thenSuccessfullyNoLongerParticipate() {
 

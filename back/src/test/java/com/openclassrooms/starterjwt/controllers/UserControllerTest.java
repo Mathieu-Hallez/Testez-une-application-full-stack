@@ -129,13 +129,4 @@ public class UserControllerTest {
         mockMvc.perform(delete(UserControllerTest.USER_PATH + "/{id}", "3"))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
-
-    // Delete
-    // - Ok
-    // - NotFound
-    // - BadRequest
-    // - Unauthorized
-
-    // Delete (Integration Test)
-    // - Ok and call delete of userService
 }
