@@ -2,8 +2,6 @@ package com.openclassrooms.starterjwt.security.services;
 
 import com.openclassrooms.starterjwt.models.User;
 import com.openclassrooms.starterjwt.repository.UserRepository;
-import com.openclassrooms.starterjwt.security.services.UserDetailsImpl;
-import com.openclassrooms.starterjwt.security.services.UserDetailsServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,7 +47,6 @@ public class UserDetailsServiceImplTest {
     @Test
     public void givenUserName_whenLoadUserByUsername_thenReturnUsernameNotFoundException() {
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
-
 
         assertThatExceptionOfType(UsernameNotFoundException.class).isThrownBy(() -> userDetailsServiceImpl.loadUserByUsername("test@gmail.com"));
     }

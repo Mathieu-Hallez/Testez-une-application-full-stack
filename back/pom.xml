@@ -110,6 +110,17 @@
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.5</version>
+
+				<configuration>
+					<excludes>
+						<exclude>com/openclassrooms/starterjwt/**/models/*.class</exclude>
+						<exclude>com/openclassrooms/starterjwt/**/*Dto.*</exclude>
+						<exclude>com/openclassrooms/starterjwt/**/*Request.*</exclude>
+						<exclude>com/openclassrooms/starterjwt/**/*Response.*</exclude>
+						<exclude>com/openclassrooms/starterjwt/**/*Exception.*</exclude>
+					</excludes>
+				</configuration>
+
 				<executions>
 					<execution>
 						<goals>
@@ -154,7 +165,15 @@
 
 				</executions>
 			</plugin>
-		</plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>9</source>
+                    <target>9</target>
+                </configuration>
+            </plugin>
+        </plugins>
 	</build>
 
 </project>
