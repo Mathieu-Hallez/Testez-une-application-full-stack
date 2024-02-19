@@ -1,49 +1,82 @@
 package com.openclassrooms.starterjwt.security.jwt;
 
+import com.openclassrooms.starterjwt.models.User;
+import com.openclassrooms.starterjwt.repository.UserRepository;
 import com.openclassrooms.starterjwt.security.services.UserDetailsServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.core.context.SecurityContextHolder;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionContext;
 
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
 public class AuthTokenFilterIT {
-    @InjectMocks
-    AuthTokenFilter authTokenFilter;
+    @Autowired
+    private AuthTokenFilter authTokenFilter;
 
+    @MockBean
+    private HttpServletRequest httpServletRequest;
+    @MockBean
+    private HttpServletResponse httpServletResponse;
+    @MockBean
+    private FilterChain filterChain;
+    @MockBean
+    private HttpSession httpSession;
+    @MockBean
+    private UserRepository userRepository;
+    @MockBean
+    private JwtUtils jwtUtils;
 
-    @Mock
-    HttpServletRequest httpServletRequest;
-    @Mock
-    HttpServletResponse httpServletResponse;
-    @Mock
-    FilterChain filterChain;
-    @Mock
-    UserDetailsServiceImpl userDetailsService;
-    @Mock
-    JwtUtils jwtUtils;
+    private User user;
+
+    @BeforeEach
+    public void setup() {
+        String authorisationString = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+        user = User.builder()
+                .id(1L)
+                .email("test@test.com")
+                .firstName("firstname")
+                .lastName("lastname")
+                .password("123456")
+                .build();
+
+        when(httpServletRequest.getHeader("Authorization")).thenReturn(authorisationString);
+        when(httpSession.getId()).thenReturn("Session1");
+        when(httpServletRequest.getSession()).thenReturn(httpSession);
+        when(httpServletRequest.getRemoteAddr()).thenReturn("remoteAddr1");
+        when(userRepository.findByEmail(anyString())).thenReturn(Optional.ofNullable(user));
+        when(jwtUtils.getUserNameFromJwtToken(anyString())).thenReturn("test@test.com");
+    }
 
     @Test
     @Disabled
     public void givenHttpServletRequestAndHttpServletResponseAndFilterChain_whenDoFilterInternal_thenSecurityContextHolderHasAuthenticationAndExecuteDoFilter() throws ServletException, IOException {
-        String authorisationString = "Bearer monJwtToken";
-
-        when(httpServletRequest.getHeader("Authorization")).thenReturn(authorisationString);
 
         when(jwtUtils.validateJwtToken(anyString())).thenReturn(true);
 
         authTokenFilter.doFilterInternal(httpServletRequest, httpServletResponse, filterChain);
+
+        assertThat(SecurityContextHolder.getContext().getAuthentication().getName()).isEqualTo(user.getEmail());
+        verify(filterChain, times(1)).doFilter(any(ServletRequest.class), any(ServletResponse.class));
     }
 }
