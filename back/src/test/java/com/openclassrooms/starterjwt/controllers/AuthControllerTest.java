@@ -56,6 +56,8 @@ public class AuthControllerTest {
     @MockBean
     private AuthenticationManager authenticationManager;
     @MockBean
+    private Authentication authentication;
+    @MockBean
     private JwtUtils jwtUtils;
 
 //        @Test
@@ -81,29 +83,9 @@ public class AuthControllerTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("test@test.com");
         loginRequest.setPassword("123456");
-        Authentication authentication = new Authentication() {
-            @Override
-            public Collection<? extends GrantedAuthority> getAuthorities() {
-                return null;
-            }            @Override
-            public Object getCredentials() {
-                return null;
-            }            @Override
-            public Object getDetails() {
-                return null;
-            }            @Override
-            public Object getPrincipal() {
-                return new UserDetailsImpl(user.getId(), user.getEmail(), user.getFirstName(), user.getLastName(), user.isAdmin(), user.getPassword());
-            }            @Override
-            public boolean isAuthenticated() {
-                return false;
-            }            @Override
-            public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {            }            @Override
-            public String getName() {
-                return null;
-            }
-        };
 
+        when(authentication.getPrincipal()).thenReturn(new UserDetailsImpl(user.getId(), user.getEmail(), user.getFirstName(), user.getLastName(), user.isAdmin(), user.getPassword()));
+        when(authentication.isAuthenticated()).thenReturn(false);
         when(authenticationManager.authenticate(any())).thenReturn(authentication);
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
         when(jwtUtils.generateJwtToken(any(Authentication.class))).thenReturn("jwt");
@@ -129,29 +111,9 @@ public class AuthControllerTest {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("test@test.com");
         loginRequest.setPassword("123456");
-        Authentication authentication = new Authentication() {
-            @Override
-            public Collection<? extends GrantedAuthority> getAuthorities() {
-                return null;
-            }            @Override
-            public Object getCredentials() {
-                return null;
-            }            @Override
-            public Object getDetails() {
-                return null;
-            }            @Override
-            public Object getPrincipal() {
-                return new UserDetailsImpl(adminUser.getId(), adminUser.getEmail(), adminUser.getFirstName(), adminUser.getLastName(), true, adminUser.getPassword());
-            }            @Override
-            public boolean isAuthenticated() {
-                return false;
-            }            @Override
-            public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {            }            @Override
-            public String getName() {
-                return null;
-            }
-        };
 
+        when(authentication.getPrincipal()).thenReturn(new UserDetailsImpl(adminUser.getId(), adminUser.getEmail(), adminUser.getFirstName(), adminUser.getLastName(), true, adminUser.getPassword()));
+        when(authentication.isAuthenticated()).thenReturn(false);
         when(authenticationManager.authenticate(any())).thenReturn(authentication);
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(adminUser));
         when(jwtUtils.generateJwtToken(any(Authentication.class))).thenReturn("jwt");
