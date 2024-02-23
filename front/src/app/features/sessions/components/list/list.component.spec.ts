@@ -33,4 +33,10 @@ describe('ListComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should display sessions in a list', () => {
+
+  });
+
+  it('should see create and detail on session element when logged with admin user ', () => {});
 });

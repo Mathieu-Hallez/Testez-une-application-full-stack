@@ -56,4 +56,14 @@ describe('FormComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should successfully create a new session', async() => {});
+
+  it('should unsuccessfully create due to invalid inputs', async() => {});
+
+  it('should successfully update a session', async() => {});
+
+  it('should unsuccessfully update due to invalid inputs', async() => {});
+
+  it('should display an error for empty mandatory input', () => {});
 });

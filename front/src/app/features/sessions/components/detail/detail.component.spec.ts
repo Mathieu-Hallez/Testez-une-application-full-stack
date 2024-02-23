@@ -42,5 +42,7 @@ describe('DetailComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should display delete button and call delete methods successfully', () => {});
 });
 

@@ -42,4 +42,8 @@ describe('MeComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should display user session information', () => {});
+
+  it('should successfully delete user account', () => {});
 });
