@@ -15,23 +15,31 @@ import { of } from 'rxjs';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { routes } from '../../auth-routing.module';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { DebugElement } from '@angular/core';
 
 describe('RegisterComponent', () => {
   let component: RegisterComponent;
   let fixture: ComponentFixture<RegisterComponent>;
-  let authServiceStub : any;
+
   let router : Router;
+  let authService : AuthService;
+  let httpTestingController: HttpTestingController;
+
+  let emailInput : HTMLInputElement;
+  let passwordInput : HTMLInputElement;
+  let firstNameInput : HTMLInputElement;
+  let lastNameInput : HTMLInputElement;
+  let registerForm : DebugElement;
 
   beforeEach(async () => {
-    authServiceStub = {
-      register: jest.fn()
-    };
 
     await TestBed.configureTestingModule({
       declarations: [RegisterComponent],
       imports: [
         BrowserAnimationsModule,
         HttpClientModule,
+        HttpClientTestingModule,
         ReactiveFormsModule,  
         MatCardModule,
         MatFormFieldModule,
@@ -39,43 +47,91 @@ describe('RegisterComponent', () => {
         MatInputModule,
         RouterTestingModule.withRoutes(routes)
       ],
-      providers: [
-        {
-          provide: AuthService,
-          useValue: authServiceStub
-        }
-      ]
-    })
-      .compileComponents();
+    }).compileComponents();
 
-      router = TestBed.inject(Router);
+    router = TestBed.inject(Router);
+    authService = TestBed.inject(AuthService);
+    httpTestingController = TestBed.inject(HttpTestingController);
 
     fixture = TestBed.createComponent(RegisterComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
 
-    router.initialNavigation();
+    emailInput = fixture.debugElement.query(By.css('input[formControlName="email"]')).nativeElement;
+    passwordInput = fixture.debugElement.query(By.css('input[formControlName="password"]')).nativeElement;
+    firstNameInput = fixture.debugElement.query(By.css('input[formControlName="firstName"]')).nativeElement;
+    lastNameInput = fixture.debugElement.query(By.css('input[formControlName="lastName"]')).nativeElement;
+    registerForm = fixture.debugElement.query(By.css('.register-form'));
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should call form methods and redirect to login page', () => {
+  it('should call form methods and redirect to login page', async () => {
     // Arrange
-    jest.spyOn(component, 'submit');
-    jest.spyOn(authServiceStub, 'register').mockReturnValue(of());
-    const navigateSpy = jest.spyOn(router, 'navigate');
-    const submitForm = fixture.debugElement.query(By.css('.register-form'));
+    jest.spyOn(router, 'navigate').mockImplementation();
 
-    // Act
-    submitForm.triggerEventHandler('ngSubmit', null);
+    emailInput.value = 'test@test.com';
+    emailInput.dispatchEvent(new Event('input'));
+    passwordInput.value = 'test!123';
+    passwordInput.dispatchEvent(new Event('input'));
+    firstNameInput.value = 'firstName';
+    firstNameInput.dispatchEvent(new Event('input'));
+    lastNameInput.value = 'lastName';
+    lastNameInput.dispatchEvent(new Event('input'));
+
+    registerForm.triggerEventHandler('ngSubmit', null);
+    await fixture.whenStable();
     fixture.detectChanges();
 
-    // Assert
-    expect(component.submit).toHaveBeenCalled();
-    expect(authServiceStub.register).toHaveBeenCalled();
+    const req = httpTestingController.expectOne('api/auth/register');
+
+    req.flush(null);
+
+    expect(component.form.valid).toBeTruthy();
     expect(component.onError).toBeFalsy();
-    // expect(navigateSpy).toHaveBeenCalled();
+    expect(router.navigate).toHaveBeenCalledWith(['/login']);
+
+    // After every test, assert that there are no more pending requests.
+    httpTestingController.verify();
+  });
+
+  
+
+  it('should unsuccessfull register due to invalid inputs', async () => {
+    emailInput.value = 'testtest.com';
+    emailInput.dispatchEvent(new Event('input'));
+    passwordInput.value = '1';
+    passwordInput.dispatchEvent(new Event('input'));
+    firstNameInput.value = '';
+    firstNameInput.dispatchEvent(new Event('input'));
+    lastNameInput.value = '';
+    lastNameInput.dispatchEvent(new Event('input'));
+
+    registerForm.triggerEventHandler('ngSubmit', null);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(component.form.controls['email'].valid).toBeFalsy();
+    expect(component.form.controls['password'].valid).toBeFalsy();
+    expect(component.form.controls['firstName'].valid).toBeFalsy();
+    expect(component.form.controls['lastName'].valid).toBeFalsy();
+  });
+
+  it('should throw an error for empty mandatory input', () => {
+    component.form.setValue({email: 'test@test.com', password: '123456', firstName: 'firstName', lastName: 'lastName'});
+
+    component.submit();
+    fixture.detectChanges();
+    
+    const req = httpTestingController.expectOne('api/auth/register');
+
+    req.error(new ProgressEvent('Register error'));
+
+    expect(component.onError).toBeTruthy();
+
+    // After every test, assert that there are no more pending requests.
+    httpTestingController.verify();
   });
 });
