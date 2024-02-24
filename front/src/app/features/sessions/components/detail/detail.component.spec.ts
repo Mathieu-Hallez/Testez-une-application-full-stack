@@ -91,7 +91,7 @@ describe('DetailComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should display delete button and call delete methods successfully', () => {
+  it('should display delete button and call delete methods successfully', async () => {
     jest.spyOn(matSnackBar, 'open').mockImplementation();
     jest.spyOn(router, 'navigate').mockImplementation();
 
@@ -101,6 +101,8 @@ describe('DetailComponent', () => {
     expect(deleteButton).toBeTruthy();
 
     deleteButton.triggerEventHandler('click', null);
+    await fixture.whenStable();
+    fixture.detectChanges();
 
     const deleteReq = httpTestingController.expectOne('api/session/1');
     deleteReq.flush(null);
@@ -110,7 +112,7 @@ describe('DetailComponent', () => {
     expect(router.navigate).toHaveBeenCalledWith(['sessions']);
   });
 
-  it('should participate to the session', () => {
+  it('should participate to the session', async() => {
 
     component.isAdmin = false;
     component.isParticipate = false;
@@ -118,6 +120,9 @@ describe('DetailComponent', () => {
 
     const participationButton = fixture.debugElement.query(By.css('#participationBtn'));
     participationButton.triggerEventHandler('click', null);
+    
+    await fixture.whenStable();
+    fixture.detectChanges();
 
     const participateReq = httpTestingController.expectOne('api/session/1/participate/1');
     participateReq.flush(null);
@@ -130,13 +135,16 @@ describe('DetailComponent', () => {
     expect(component.isParticipate).toBeTruthy();
   });
 
-  it('should unparticipate to the session', () => {
+  it('should unparticipate to the session', async() => {
     component.isAdmin = false;
     component.isParticipate = true;
     fixture.detectChanges();
 
     const participationButton = fixture.debugElement.query(By.css('#participationBtn'));
     participationButton.triggerEventHandler('click', null);
+    
+    await fixture.whenStable();
+    fixture.detectChanges();
 
     const participateReq = httpTestingController.expectOne('api/session/1/participate/1');
     participateReq.flush(null);
