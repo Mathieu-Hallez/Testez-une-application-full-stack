@@ -20,7 +20,7 @@ describe('Session creation spec', () => {
               url: '/api/session',
             },
             []
-        ).as('session');
+        );
         cy.intercept(
             {
                 method: 'GET',
@@ -35,7 +35,7 @@ describe('Session creation spec', () => {
                     updatedAt: new Date('2024-01-01'),
                 }
             ]
-        )
+        );
 
         cy.login('yoga@studio.com', 'test!1234', 'firstname', 'lastname', true);
 
@@ -53,7 +53,7 @@ describe('Session creation spec', () => {
                 statusCode: 200,
                 body: session
             }
-        )
+        );
 
         cy.get('h1').contains('Create session');
 
