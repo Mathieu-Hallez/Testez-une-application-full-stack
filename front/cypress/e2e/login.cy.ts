@@ -15,7 +15,7 @@ describe('Login spec', () => {
         method: 'GET',
         url: '/api/session',
       },
-      []).as('session')
+      []).as('session');
 
       cy.visit('login');
 
@@ -27,12 +27,12 @@ describe('Login spec', () => {
           lastName: 'lastname',
           admin: true
         },
-      })
+      });
   
-      cy.get('input[formControlName=email]').type('yoga@studio.com')
-      cy.get('input[formControlName=password]').type(`${'test!1234'}{enter}{enter}`)
+      cy.get('input[formControlName=email]').type('yoga@studio.com');
+      cy.get('input[formControlName=password]').type(`${'test!1234'}{enter}{enter}`);
 
-    cy.url().should('include', '/sessions')
+    cy.url().should('include', '/sessions');
   });
 
   it('Login failed', () => {

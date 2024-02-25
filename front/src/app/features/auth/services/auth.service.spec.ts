@@ -1,8 +1,7 @@
-import { TestBed, fakeAsync } from "@angular/core/testing";
+import { TestBed } from "@angular/core/testing";
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { AuthService } from "./auth.service";
 import { HttpClient } from "@angular/common/http";
-import { SessionInformation } from "src/app/interfaces/sessionInformation.interface";
 import { expect } from '@jest/globals';
 
 describe('AuthService', () => {

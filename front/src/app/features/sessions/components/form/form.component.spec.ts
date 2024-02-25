@@ -20,7 +20,6 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 import { Session } from '../../interfaces/session.interface';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
-import { NativeDateAdapter } from '@angular/material/core';
 
 describe('FormComponent', () => {
   let component: FormComponent;
@@ -30,10 +29,6 @@ describe('FormComponent', () => {
     sessionInformation: {
       admin: true
     }
-  };
-  const mockRouterService = {
-    url: '/sessions/create',
-    root: {},
   };
 
   let router : Router;
@@ -78,7 +73,6 @@ describe('FormComponent', () => {
       ],
       providers: [
         { provide: SessionService, useValue: mockSessionService },
-        // { provide: Router, useValue: mockRouterService},
         SessionApiService
       ],
       declarations: [FormComponent]
@@ -97,7 +91,6 @@ describe('FormComponent', () => {
       const mockUrlTree = router.parseUrl('/sessions/create');
       // @ts-ignore: force this private property value for testing.
       router.currentUrlTree = mockUrlTree;
-      // router.navigate(['/sessions/create']);
 
       fixture = TestBed.createComponent(FormComponent);
       component = fixture.componentInstance;

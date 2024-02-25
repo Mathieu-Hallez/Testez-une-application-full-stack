@@ -1,5 +1,5 @@
 import { HttpClientModule } from '@angular/common/http';
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -11,7 +11,6 @@ import { expect } from '@jest/globals';
 import { RegisterComponent } from './register.component';
 import { By } from '@angular/platform-browser';
 import { AuthService } from '../../services/auth.service';
-import { of } from 'rxjs';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { routes } from '../../auth-routing.module';
@@ -69,7 +68,6 @@ describe('RegisterComponent', () => {
   });
 
   it('should call form methods and redirect to login page', async () => {
-    // Arrange
     jest.spyOn(router, 'navigate').mockImplementation();
 
     emailInput.value = 'test@test.com';

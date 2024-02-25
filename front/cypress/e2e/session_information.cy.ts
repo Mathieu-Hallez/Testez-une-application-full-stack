@@ -28,7 +28,7 @@ describe('Session detail spec', () => {
                 url: '/api/session/1'
             },
             session
-        )
+        );
 
         cy.intercept(
             {
@@ -42,7 +42,7 @@ describe('Session detail spec', () => {
                 createdAt: new Date('2024-01-01'),
                 updatedAt: new Date('2024-01-01'),
             }
-        )
+        );
 
         cy.login('yoga@studio.com', 'test!1234', 'firstname', 'lastname', true);
         cy.get('button').contains('Detail').click();
