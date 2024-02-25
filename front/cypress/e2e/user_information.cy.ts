@@ -1,6 +1,6 @@
 import '../support/commands';
 
-describe('Information session spec', () => {
+describe('User information spec', () => {
     beforeEach(() => {
         cy.intercept(
             {

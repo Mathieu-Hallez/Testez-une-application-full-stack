@@ -46,5 +46,7 @@ describe('Sessions spec', () => {
     it('Display admin buttons', () => {
         cy.get('button').contains('Edit');
         cy.get('button').contains('Create');
-    })
+    });
+
+    
 });
