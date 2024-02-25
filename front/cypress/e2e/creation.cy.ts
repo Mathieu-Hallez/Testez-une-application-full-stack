@@ -71,7 +71,7 @@ describe('Session creation spec', () => {
         cy.get('input[formControlName=name]').type('{enter}');
         cy.get('input[formControlName=date]').type(session.date);
         cy.get('mat-select[formControlName=teacher_id]').click().get('mat-option').contains('firstname lastname').click();
-        cy.get('textarea[formControlName=description]').type(`${session.description}`);
+        cy.get('textarea[formControlName=description]').type(session.description);
 
         cy.contains('Save').should('be.disabled');
     });
