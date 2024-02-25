@@ -29,6 +29,24 @@
 //
 // -- This is a parent command --
 // Cypress.Commands.add("login", (email, password) => { ... })
+Cypress.Commands.add("loginAdmin", (email : string, password : string, firstname : string, lastname : string) => {
+    cy.visit('login');
+
+    cy.intercept('POST', '/api/auth/login', {
+      body: {
+        id: 1,
+        username: email,
+        firstName: firstname,
+        lastName: lastname,
+        admin: true
+      },
+    })
+
+    cy.get('input[formControlName=email]').type(email)
+    cy.get('input[formControlName=password]').type(`${password}{enter}{enter}`)
+
+    cy.url().should('include', '/sessions')
+  });
 //
 //
 // -- This is a child command --
