@@ -47,6 +47,4 @@ describe('Sessions spec', () => {
         cy.get('button').contains('Edit');
         cy.get('button').contains('Create');
     });
-
-    
 });
