@@ -9,6 +9,6 @@ declare namespace Cypress {
       /**
        * Login a user in the app
       * */
-      loginAdmin(email : string, password : string, firstname : string, lastname : string): void;
+      login(email : string, password : string, firstname : string, lastname : string, isAdmin : boolean): void;
     }
   }

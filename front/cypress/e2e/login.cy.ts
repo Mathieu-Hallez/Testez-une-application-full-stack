@@ -17,7 +17,22 @@ describe('Login spec', () => {
       },
       []).as('session')
 
-    cy.loginAdmin('yoga@studio.com', 'test!1234', 'firstname', 'lastname');
+      cy.visit('login');
+
+      cy.intercept('POST', '/api/auth/login', {
+        body: {
+          id: 1,
+          username: 'username',
+          firstName: 'firstname',
+          lastName: 'lastname',
+          admin: true
+        },
+      })
+  
+      cy.get('input[formControlName=email]').type('yoga@studio.com')
+      cy.get('input[formControlName=password]').type(`${'test!1234'}{enter}{enter}`)
+
+    cy.url().should('include', '/sessions')
   });
 
   it('Login failed', () => {
