@@ -22,7 +22,7 @@ Launch Front-end:
 
 > npm run start;
 
-### Test
+## Test
 
 #### Unitary test
 
@@ -38,7 +38,7 @@ You will find coverage report here:
 
 > front/coverage/jest/lcov-report/index.html
 
-#### E2E
+## E2E
 
 Launching your application server:
 
