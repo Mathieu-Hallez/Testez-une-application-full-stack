@@ -1,16 +1,18 @@
-# Yoga
+![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
+![Angular](https://img.shields.io/badge/angular-%23DD0031.svg?style=for-the-badge&logo=angular&logoColor=white)
+![RxJS](https://img.shields.io/badge/rxjs-%23B7178C.svg?style=for-the-badge&logo=reactivex&logoColor=white)
+![NPM](https://img.shields.io/badge/NPM-%23CB3837.svg?style=for-the-badge&logo=npm&logoColor=white)
+![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
+
+# Yoga Front-End
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 14.1.0.
 
-## Start the project
-
-Git clone:
-
-> git clone https://github.com/OpenClassrooms-Student-Center/P5-Full-Stack-testing
+## Start the front-end
 
 Go inside folder:
 
-> cd yoga
+> cd front
 
 Install dependencies:
 
@@ -20,46 +22,7 @@ Launch Front-end:
 
 > npm run start;
 
-
-## Ressources
-
-### Mockoon env 
-
-### Postman collection
-
-For Postman import the collection
-
-> ressources/postman/yoga.postman_collection.json 
-
-by following the documentation: 
-
-https://learning.postman.com/docs/getting-started/importing-and-exporting-data/#importing-data-into-postman
-
-
-### MySQL
-
-SQL script for creating the schema is available `ressources/sql/script.sql`
-
-By default the admin account is:
-- login: yoga@studio.com
-- password: test!1234
-
-
 ### Test
-
-#### E2E
-
-Launching e2e test:
-
-> npm run e2e
-
-Generate coverage report (you should launch e2e test before):
-
-> npm run e2e:coverage
-
-Report is available here:
-
-> front/coverage/lcov-report/index.html
 
 #### Unitary test
 
@@ -70,3 +33,25 @@ Launching test:
 for following change:
 
 > npm run test:watch
+
+You will find coverage report here:
+
+> front/coverage/jest/lcov-report/index.html
+
+#### E2E
+
+Launching your application server:
+
+> npm run start
+
+Then launch all end to end test with:
+
+> npm run cypress:run
+
+Generate coverage report (you should launch e2e test before):
+
+> npm run e2e:coverage
+
+Report is available here:
+
+> front/coverage/lcov-report/index.html
